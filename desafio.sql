@@ -72,39 +72,39 @@ BEGIN
     DECLARE v_amount DECIMAL(5,2);
     DECLARE v_payment_date DATETIME;
 
-    -- Obtener un inventory_id disponible para esa película
+    
     SELECT inventory_id
     INTO v_inventory_id
     FROM inventory
     WHERE film_id = p_film_id
     LIMIT 1;
 
-    -- Validar que haya inventario
+    
     IF v_inventory_id IS NULL THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'No hay inventario disponible para esta película.';
     END IF;
 
-    -- Insertar en rental
+    
     INSERT INTO rental (rental_date, inventory_id, customer_id, return_date, staff_id)
     VALUES (NOW(), v_inventory_id, p_customer_id, NULL, p_staff_id);
 
-    SET p_rental_id = LAST_INSERT_ID();  -- Asigna el ID del alquiler a la variable OUT
+    SET p_rental_id = LAST_INSERT_ID();  
 
-    -- Obtener el precio (rental_rate) de la película
+    
     SELECT rental_rate INTO v_amount
     FROM film
     WHERE film_id = p_film_id;
 
-    -- Definir la fecha de pago
+    
     SET v_payment_date = NOW();
 
-    -- Insertar en payment
+    
     INSERT INTO payment (customer_id, staff_id, rental_id, amount, payment_date)
     VALUES (p_customer_id, p_staff_id, p_rental_id, v_amount, v_payment_date);
 
-    -- Devolver valores por OUT
-    SET p_total_out = v_amount;  -- Asignar el total a la variable OUT
+    
+    SET p_total_out = v_amount;
 END$$
 
 DELIMITER ;
